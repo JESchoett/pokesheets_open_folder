@@ -1,9 +1,6 @@
 #https://developers.google.com/drive/api/guides/api-specific-auth
 
-#from dotenv import load_dotenv #zum Aufruf der .env Datei
-##get the API-KEY from a .env file
-#load_dotenv()
-from dotenv import load_dotenv #zum Aufruf der .env Datei
+from dotenv import load_dotenv #get the Data of the .env
 import os.path
 import webbrowser
 
@@ -19,8 +16,7 @@ SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
 
 def auth_with_cred():
    """
-   idk hab ich so kopiert aus der doku, nur den pfad zu der
-   credentials.json angepasst
+   idk copyd this function from the api doc, just changed the path to the credentials.json on line 33
    """
    creds = None
    # The file token.json stores the user's access and refresh tokens, and is
@@ -71,52 +67,39 @@ def get_Files_in_Folder(service, team_folder):
     except HttpError as error:
         print(f"An error occurred: {error}")
 
-#get the data of the credentials.json, get that from here: https://console.cloud.google.com/apis/credentials?project=pragmatic-aegis-386807
+#get the data of the credentials.json
 service = build('drive', 'v3', credentials=auth_with_cred())
 pokesheets = "https://pokesheets.app/pokemon/drive/"
 
 #get the Constants of the Folder-IDs using the .env file
 load_dotenv()
 
-AE_Team = os.getenv('AE_Team')
-AE_Box = os.getenv('AE_Box')
-
-JE_Team = os.getenv('JE_Team')
-JE_Box = os.getenv('JE_Box')
-
-HD_Team = os.getenv('HD_Team')
-HD_Box = os.getenv('HD_Box')
-
-
+team=''
 folder_to_search = input("Welcher Spieler soll verwaltet werden?\n1: AE\n2: JE\n3: HD\n")
-
 if folder_to_search == "AE" or folder_to_search == "1":
+    team = os.getenv('AE_Team')
+    box = os.getenv('AE_Box')
+
+elif folder_to_search == "JE" or folder_to_search == "2":
+    team = os.getenv('JE_Team')
+    box = os.getenv('JE_Box')
+
+elif folder_to_search == "HD" or folder_to_search == "3":
+    team = os.getenv('HD_Team')
+    box = os.getenv('HD_Box')
+
+
+if team:
     mode_folder = input("1: Team\n2: Box\n[Team]: ")
     if mode_folder == "Box":
-       mode_folder = AE_Box
+       mode_folder = box
     else:
-       mode_folder = AE_Team
-
+       mode_folder = team
     Team = get_Files_in_Folder(service, mode_folder)
-elif folder_to_search == "JE" or folder_to_search == "2":
-    mode_folder = input("Oeffnen des 1: Teams, oder der 2: Box?")
-    if mode_folder == "Box":
-       mode_folder = JE_Box
-    else:
-       mode_folder = JE_Team
 
-    Team = get_Files_in_Folder(service, mode_folder)
-elif folder_to_search == "HD" or folder_to_search == "3":
-    mode_folder = input("Oeffnen des 1: Teams, oder der 2: Box?")
-    if mode_folder == "Box":
-       mode_folder = HD_Box
-    else:
-       mode_folder = HD_Team
+    if Team:
+        for mon in Team:
+           webbrowser.open_new_tab(pokesheets+ mon['id'])
 
-    Team = get_Files_in_Folder(service, mode_folder)
 else:
-   print("Ungültige Eingabe")
-
-if Team:
-    for mon in Team:
-       webbrowser.open_new_tab(pokesheets+ mon['id'])
+   print("Invalid input")
